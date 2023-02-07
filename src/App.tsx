@@ -1,12 +1,16 @@
-import { Container, Spacer } from "@chakra-ui/react";
-import Nav from "./core/widgets/Nav";
-import Home from "./pages/home/Home";
+import { Container } from '@chakra-ui/react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Nav from './core/components/Nav';
+import Home from './pages/home/Home';
+import Products from './pages/products/Products';
+import routes from './routes';
+
+const router = routes();
 
 export default function App() {
-  return <>
-    <Nav />
-    <Container maxW="container.xl" p={4}>
-      <Home />
-    </Container>
-  </>
+  return (
+    <>
+      <RouterProvider router={router} />
+    </>
+  );
 }
