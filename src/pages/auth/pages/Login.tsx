@@ -19,7 +19,10 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
+import { AppAction } from '../../../core/context/AppActions';
+import { useAppContext } from '../../../core/context/AppContext';
 
 const schema = yup
   .object({
@@ -37,10 +40,11 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm<LoginType>({ resolver: yupResolver(schema) });
   const [show, setShow] = useState(false);
+  const navigate = useNavigate()
+  const { dispatch } = useAppContext();
   const onSubmit = handleSubmit(async (data) => {
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-    setError('username', { type: 'manual', message: 'username or password wrong' });
-    setError('password', { type: 'manual', message: 'username or password wrong' });
+    dispatch({ act: AppAction.Login, data: { name: data.username, token: data.username } });
+    navigate('/');
   });
 
   return (
@@ -60,7 +64,7 @@ export default function Login() {
               <Stack spacing={4}>
                 <FormControl id='username' isInvalid={errors.username !== undefined}>
                   <FormLabel>Usuário</FormLabel>
-                  <Input type='text' {...register('username')} />
+                  <Input type='text' autoComplete='off' {...register('username')} />
                   <FormErrorMessage>{errors.username && errors.username.message}</FormErrorMessage>
                 </FormControl>
                 <FormControl id='password' isInvalid={errors.password !== undefined}>

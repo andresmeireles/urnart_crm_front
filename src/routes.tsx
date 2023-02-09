@@ -7,6 +7,7 @@ import Home from './pages/home/Home';
 import AddProduct from './pages/products/pages/AddProduct';
 import Products from './pages/products/Products';
 import Auth from './Auth';
+import AddOrder from './pages/order/pages/AddOrder';
 
 export default () =>
   createBrowserRouter([
@@ -15,9 +16,6 @@ export default () =>
     {
       path: '/',
       element: <Auth />,
-      action: () => {
-        console.log('route');
-      },
       children: [
         {
           path: '',
@@ -33,16 +31,7 @@ export default () =>
           element: <Products />,
         },
         { path: 'product/add', element: <AddProduct /> },
+        { path: 'order/add', element: <AddOrder /> },
       ],
     },
-    //   {
-    //     path: '/product',
-    //     element: <Products />,
-    //     children: [
-    //       {
-    //         path: '/add',
-    //         element: <AddProduct />,
-    //       },
-    //     ],
-    //   },
   ]);
