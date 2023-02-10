@@ -1,6 +1,8 @@
+import { Customer } from "../../customers/model/Customer";
 import { OrderProduct } from "./OrderProduct";
 
 interface AddOrderDataInterface {
+  id?: number,
   customer: number,
   products: OrderProduct[],
   freight: number,
@@ -24,9 +26,10 @@ export class OrderData {
     public readonly observation?: string;
     public readonly name?: string;
     public readonly port?: string;
+    public readonly id?: number;
 
   constructor(props: AddOrderDataInterface) {
-    const { customer, products, freight, payment, transport, entry, discount, observation, name, port } = props;
+    const { customer, products, freight, payment, transport, entry, discount, observation, name, port, id } = props;
     this.customer = customer;
     this.products = products;
     this.freight = freight;
@@ -37,6 +40,7 @@ export class OrderData {
     this.observation = observation;
     this.name = name;
     this.port = port;
+    this.id = id 
   }
 
   copyWith(props: {

@@ -32,6 +32,7 @@ const initOrder = new OrderData({
   name: '',
   observation: '',
   discount: 0,
+  id: undefined,
 });
 
 export type OrderActions =
@@ -69,10 +70,10 @@ const orderDispatcher = (state: OrderData, action: OrderActions): OrderData => {
 
 const asValue = (number: number): number => (isNaN(number) ? 0 : number);
 
-export default function AddOrder() {
+export default function AddOrder(props: { order?: OrderData }) {
   const toast = useToast();
   const navigate = useNavigate();
-  const [state, dispatch] = useReducer(orderDispatcher, initOrder);
+  const [state, dispatch] = useReducer(orderDispatcher, props.order ?? initOrder);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const products = getProducts();
   const customers = getCustomers();
@@ -86,7 +87,8 @@ export default function AddOrder() {
       return;
     }
     await new Promise((resolve) => setTimeout(resolve, 6000));
-    toast({ title: 'pedido criado com sucesso', position: 'top-right', status: 'success' });
+    const title = state.id !== undefined ? 'atualizado com sucesso' : 'criado com sucesso';
+    toast({ title, position: 'top-right', status: 'success' });
     navigate('/');
   };
 
