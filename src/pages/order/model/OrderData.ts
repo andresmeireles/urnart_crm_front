@@ -1,4 +1,4 @@
-import { OrderProduct } from "./Order";
+import { OrderProduct } from "./OrderProduct";
 
 interface AddOrderDataInterface {
   customer: number,
@@ -13,7 +13,7 @@ interface AddOrderDataInterface {
   port?: string
 }
 
-export class AddOrderData {
+export class OrderData {
   public readonly customer: number;
     public readonly products: OrderProduct[];
     public readonly freight: number;
@@ -52,7 +52,7 @@ export class AddOrderData {
     port?: string
   }) {
     const { customer, products, freight, payment, transport, entry, discount, observation, name, port } = props;
-    return new AddOrderData({
+    return new OrderData({
       customer: customer ?? this.customer,
       products: products ?? this.products,
       freight: freight ?? this.freight,
@@ -64,6 +64,18 @@ export class AddOrderData {
       name: name ?? this.name,
       port: port ?? this.port
     });
+  }
+
+  get isValid(): boolean | string {
+    if (this.customer === 0) return 'cliente precisa ser preenchido';
+    if (this.payment === 0) return 'cliente precisa um forma de pagento definida';
+    if (this.products.length === 0) return 'não ha produtos cadastrados no pedido';
+    if (this.transport === 0) return 'pedido não tem meio de entrega deifnido em transporte';
+    if (this.transport > 1 && this.name === undefined) return 'entregas precisa de um resposavel para entrega';
+    if (this.transport > 2 && this.name!.trim().length === 0) return 'nome de quem ira fazer a entrega não pode ser vazio';
+    if (this.transport > 3 && this.port === undefined) return 'entregas em porto precisam ter o nome do porto definido';
+    if (this.transport > 3 && this.port!.trim().length === 0) return 'porto precisa ser preenchido';
+    return true;
   }
 
   get productsTotalPrice(): number {

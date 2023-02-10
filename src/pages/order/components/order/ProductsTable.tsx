@@ -3,46 +3,47 @@ import { Flex, IconButton, Input, Select, Table, Tbody, Td, Th, Thead, Tr } from
 import { Dispatch, useState } from 'react';
 import { Md5 } from 'ts-md5';
 import Product from '../../../products/model/Product';
-import { OrderProduct } from '../../model/Order';
+import { OrderProduct } from '../../model/OrderProduct';
 import { OrderActions } from '../../pages/AddOrder';
 
 export default function ProductsTable(props: {
   products: Product[];
   orderProducts: OrderProduct[];
-  dispatch: Dispatch<OrderActions>
+  dispatch: Dispatch<OrderActions>;
 }) {
-  const {
-    orderProducts,
-    products,
-    dispatch
-  } = props;
+  const { orderProducts, products, dispatch } = props;
 
   const [selected, setSelected] = useState('');
 
   const addProduct = () => {
     const product = products.find((op) => op.id === Number(selected));
     if (product === undefined) return;
-    const op = { product: product, amount: 1, price: product.price, hash: Md5.hashStr(`${product.id}${product.name}`) };
-    dispatch({ update: "add-product", value: op })
-  }
+    const op = {
+      product: product,
+      amount: 1,
+      price: product.price,
+      hash: Md5.hashStr(`${product.id}${product.name}`),
+    };
+    dispatch({ update: 'products', value: [...orderProducts, op] });
+  };
 
-  const updatePrice = (props: { hash: string, price: number }) => {
+  const updatePrice = (props: { hash: string; price: number }) => {
     const { hash, price } = props;
     const product = orderProducts.find((op) => op.hash === hash);
     if (product === undefined) return;
     product.price = price;
     const removeProd = orderProducts.filter((op) => op.hash !== hash);
-    dispatch({ update: "products", value: [...removeProd, product] })
-  }
+    dispatch({ update: 'products', value: [...removeProd, product] });
+  };
 
-  const updateAmount = (props: { hash: string, amount: number }) => {
+  const updateAmount = (props: { hash: string; amount: number }) => {
     const { hash, amount } = props;
     const product = orderProducts.find((op) => op.hash === hash);
     if (product === undefined) return;
     product.amount = amount;
     const removeProd = orderProducts.filter((op) => op.hash !== hash);
-    dispatch({ update: "products", value: [...removeProd, product] })
-  }
+    dispatch({ update: 'products', value: [...removeProd, product] });
+  };
 
   return (
     <>
@@ -60,21 +61,17 @@ export default function ProductsTable(props: {
             );
           })}
         </Select>
-        <IconButton
-          icon={<AddIcon />}
-          aria-label={'add button'}
-          onClick={addProduct}
-        />
+        <IconButton icon={<AddIcon />} aria-label={'add button'} onClick={addProduct} />
       </Flex>
       {orderProducts.length !== 0 ? (
-        <Table>
+        <Table size={'sm'} mt={2}>
           <Thead>
             <Tr>
-              <Th>Nome</Th>
+              <Th>Modelo</Th>
               <Th>Preço</Th>
               <Th>Quantidade</Th>
               <Th>Total</Th>
-              <Th></Th>
+              <Th>Açoes</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -85,13 +82,15 @@ export default function ProductsTable(props: {
                   <Td>
                     <Input
                       defaultValue={p.price}
-                      onBlur={(e) => updatePrice({ hash: p.hash, price: Number(e.target.value) })}
+                      onChange={(e) => updatePrice({ hash: p.hash, price: Number(e.target.value) })}
                     />
                   </Td>
                   <Td>
                     <Input
                       defaultValue={p.amount}
-                      onBlur={(e) => updateAmount({ hash: p.hash, amount: Number(e.target.value) })}
+                      onChange={(e) =>
+                        updateAmount({ hash: p.hash, amount: Number(e.target.value) })
+                      }
                     />
                   </Td>
                   <Td>
@@ -101,7 +100,12 @@ export default function ProductsTable(props: {
                   </Td>
                   <Td>
                     <IconButton
-                      onClick={() => dispatch({update: 'products', value: orderProducts.filter((op) => op.hash !== p.hash)})}
+                      onClick={() =>
+                        dispatch({
+                          update: 'products',
+                          value: orderProducts.filter((op) => op.hash !== p.hash),
+                        })
+                      }
                       bg={'red.400'}
                       _hover={{
                         bg: 'red.500',

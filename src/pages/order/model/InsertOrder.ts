@@ -1,5 +1,3 @@
-import Product from "../../products/model/Product";
-
 export interface PaymentType {label: string, code: number}
 
 export const paymentTypeList: PaymentType[] = [
@@ -18,10 +16,3 @@ export const transportTypeList: TransportType[] = [
     {label: 'Terceirizado', code: 3},
     {label: 'Porto', code: 4},
 ]
-
-export interface OrderProduct {
-    hash: string,
-    product: Product,
-    amount: number,
-    price: number
-}

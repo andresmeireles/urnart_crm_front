@@ -8,6 +8,7 @@ import AddProduct from './pages/products/pages/AddProduct';
 import Products from './pages/products/Products';
 import Auth from './Auth';
 import AddOrder from './pages/order/pages/AddOrder';
+import Orders from './pages/order/pages/Orders';
 
 export default () =>
   createBrowserRouter([
@@ -31,6 +32,7 @@ export default () =>
           element: <Products />,
         },
         { path: 'product/add', element: <AddProduct /> },
+        { path: 'order', element: <Orders /> },
         { path: 'order/add', element: <AddOrder /> },
       ],
     },
