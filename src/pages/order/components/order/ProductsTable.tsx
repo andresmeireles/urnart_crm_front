@@ -1,29 +1,48 @@
 import { AddIcon, CloseIcon } from '@chakra-ui/icons';
 import { Flex, IconButton, Input, Select, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
-import { useState } from 'react';
+import { Dispatch, useState } from 'react';
+import { Md5 } from 'ts-md5';
 import Product from '../../../products/model/Product';
 import { OrderProduct } from '../../model/Order';
+import { OrderActions } from '../../pages/AddOrder';
 
 export default function ProductsTable(props: {
   products: Product[];
   orderProducts: OrderProduct[];
-  removeHash: (hash: string) => void;
-  selected: string;
-  setSelected: (arg: string) => void;
-  addProd: (props: { id: number }) => void;
-  updatePrice: (props: { hash: string; price: number }) => void;
-  updateAmount: (props: { hash: string; amount: number }) => void;
+  dispatch: Dispatch<OrderActions>
 }) {
   const {
     orderProducts,
-    updatePrice,
-    updateAmount,
     products,
-    removeHash,
-    selected,
-    setSelected,
-    addProd,
+    dispatch
   } = props;
+
+  const [selected, setSelected] = useState('');
+
+  const addProduct = () => {
+    const product = products.find((op) => op.id === Number(selected));
+    if (product === undefined) return;
+    const op = { product: product, amount: 1, price: product.price, hash: Md5.hashStr(`${product.id}${product.name}`) };
+    dispatch({ update: "add-product", value: op })
+  }
+
+  const updatePrice = (props: { hash: string, price: number }) => {
+    const { hash, price } = props;
+    const product = orderProducts.find((op) => op.hash === hash);
+    if (product === undefined) return;
+    product.price = price;
+    const removeProd = orderProducts.filter((op) => op.hash !== hash);
+    dispatch({ update: "products", value: [...removeProd, product] })
+  }
+
+  const updateAmount = (props: { hash: string, amount: number }) => {
+    const { hash, amount } = props;
+    const product = orderProducts.find((op) => op.hash === hash);
+    if (product === undefined) return;
+    product.amount = amount;
+    const removeProd = orderProducts.filter((op) => op.hash !== hash);
+    dispatch({ update: "products", value: [...removeProd, product] })
+  }
 
   return (
     <>
@@ -44,7 +63,7 @@ export default function ProductsTable(props: {
         <IconButton
           icon={<AddIcon />}
           aria-label={'add button'}
-          onClick={() => addProd({ id: Number(selected) })}
+          onClick={addProduct}
         />
       </Flex>
       {orderProducts.length !== 0 ? (
@@ -82,7 +101,7 @@ export default function ProductsTable(props: {
                   </Td>
                   <Td>
                     <IconButton
-                      onClick={() => removeHash(p.hash)}
+                      onClick={() => dispatch({update: 'products', value: orderProducts.filter((op) => op.hash !== p.hash)})}
                       bg={'red.400'}
                       _hover={{
                         bg: 'red.500',

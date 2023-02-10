@@ -19,15 +19,6 @@ export const transportTypeList: TransportType[] = [
     {label: 'Porto', code: 4},
 ]
 
-export interface AddOrder {
-    customer: number,
-    products: Product[],
-    freight: number,
-    payment: PaymentType,
-    transport?: number,
-    observation?: string,
-}
-
 export interface OrderProduct {
     hash: string,
     product: Product,
