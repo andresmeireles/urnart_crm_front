@@ -4,8 +4,8 @@ Front end com objectivo de consumir dados de URNART CRM(link aqui no futuro).
 
 ## Objetivos
 * Sistema de login
-    * Logout
-    * Usuário com login e senha
+    * ~~Logout~~
+    * ~~Usuário com login e senha~~
     * Botão de lembra-se de mim
     * Gravar hash on localstorage
 * Sistema de autorização e permissão

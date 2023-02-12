@@ -1,6 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
-import Auth from './Auth';
-import { useAppContext } from './core/context/AppContext';
+import Auth from './core/components/Auth';
 import Login from './features/auth/pages/Login';
 import Customer from './features/customers/Customer';
 import AddCustomer from './features/customers/pages/AddCustomer';
@@ -9,6 +8,7 @@ import AddOrder from './features/order/pages/AddOrder';
 import Orders from './features/order/pages/Orders';
 import AddProduct from './features/products/pages/AddProduct';
 import Products from './features/products/Products';
+import Exit from './features/reports/pages/Exit';
 import List from './features/reports/pages/List';
 import Tag from './features/reports/pages/Tag';
 
@@ -38,6 +38,7 @@ export default () =>
         { path: 'order/add', element: <AddOrder /> },
         { path: 'report', element: <List /> },
         { path: 'report/tag', element: <Tag /> },
+        { path: 'report/exit', element: <Exit /> },
       ],
     },
   ]);
