@@ -6,6 +6,7 @@ export interface ExitInterface {
   s: number,
   sort: number,
   freight: number,
+  order: number,
   payment: string,
   single: boolean,
 }

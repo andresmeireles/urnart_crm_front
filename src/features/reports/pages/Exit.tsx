@@ -26,7 +26,7 @@ import { ExitInterface } from '../model/Exit';
 
 type ExitActions =
   | { action: 'name' | 'city' | 'payment'; value: string }
-  | { action: 's' | 'm' | 'b' | 'freight' | 'sort'; value: number }
+  | { action: 's' | 'm' | 'b' | 'order' | 'freight' | 'sort'; value: number }
   | { action: 'single'; value: boolean }
   | { action: 'reset' };
 
@@ -40,10 +40,11 @@ class ExitItem {
   public readonly freight: number;
   public readonly sort: number;
   public readonly single: boolean;
+  public readonly order: number;
   public readonly hash: string;
 
   constructor(props: ExitInterface) {
-    const { name, city, payment, s, m, b, freight, sort, single } = props;
+    const { name, city, payment, order, s, m, b, freight, sort, single } = props;
     this.name = name;
     this.payment = payment;
     this.city = city;
@@ -51,6 +52,7 @@ class ExitItem {
     this.b = b;
     this.m = m;
     this.s = s;
+    this.order = order;
     this.sort = sort;
     this.single = single;
     this.hash = new Date().getTime().toString();
@@ -82,15 +84,17 @@ class ExitItem {
     sort?: number;
     freight?: number;
     payment?: string;
+    order?: number;
     single?: boolean;
   }) {
-    const { name, city, payment, s, m, b, freight, sort, single } = props;
+    const { name, city, order, payment, s, m, b, freight, sort, single } = props;
     return new ExitItem({
       name: name ?? this.name,
       city: city ?? this.city,
       b: b ?? this.b,
       m: m ?? this.m,
       s: s ?? this.s,
+      order: order ?? this.order,
       sort: sort ?? this.sort,
       freight: freight ?? this.freight,
       payment: payment ?? this.payment,
@@ -120,6 +124,8 @@ const exitDispatcher = (state: ExitItem, event: ExitActions) => {
       return state.copyWith({ m: event.value });
     case 'b':
       return state.copyWith({ b: event.value });
+    case 'order':
+      return state.copyWith({ order: event.value });
     case 'reset':
       return init;
   }
@@ -132,6 +138,7 @@ const init = new ExitItem({
   single: true,
   sort: 0,
   freight: 0,
+  order: 0,
   s: 0,
   m: 0,
   b: 0,
@@ -155,8 +162,7 @@ export default function Exit() {
       toast({ title: state.isValid(), position: 'top-right', duration: 2000 });
       return;
     }
-    dispatch({ action: 'sort', value: items.length + 1 });
-    setItems([...items, state]);
+    setItems([...items, state.copyWith({ sort: items.length + 1 })]);
     dispatch({ action: 'reset' });
   };
 
@@ -180,10 +186,30 @@ export default function Exit() {
               onChange={(v) => dispatch({ action: 'city', value: v.target.value })}
             />
           </Flex>
+          <Flex mt={4} gap={3}>
+            <Input
+              placeholder='forma de pagamento'
+              value={state.payment}
+              onChange={(v) => dispatch({ action: 'payment', value: v.target.value })}
+            />
+            <Input
+              placeholder='frete'
+              value={state.freight}
+              onChange={(v) => dispatch({ action: 'freight', value: Number(v.target.value) })}
+            />
+            <Input
+              placeholder='valor do pedido'
+              value={state.order}
+              onChange={(v) => dispatch({ action: 'order', value: Number(v.target.value) })}
+            />
+          </Flex>
           <Flex gap={3} mt={4}>
             <FormControl>
               <FormLabel>Grandes</FormLabel>
-              <NumberInput value={state.b} onChange={(_, v) => dispatch({ action: 'b', value: v })}>
+              <NumberInput
+                value={state.b}
+                onChange={(e, v) => dispatch({ action: 'b', value: Number(e) })}
+              >
                 <NumberInputField
                   value={state.b}
                   onChange={(v) => dispatch({ action: 'b', value: toValue(v.target.value) })}
@@ -196,7 +222,10 @@ export default function Exit() {
             </FormControl>
             <FormControl>
               <FormLabel>Medias</FormLabel>
-              <NumberInput value={state.m} onChange={(_, v) => dispatch({ action: 'm', value: v })}>
+              <NumberInput
+                value={state.m}
+                onChange={(v, _) => dispatch({ action: 'm', value: toValue(v) })}
+              >
                 <NumberInputField
                   value={state.m}
                   onChange={(v) => dispatch({ action: 'm', value: toValue(v.target.value) })}
@@ -209,7 +238,10 @@ export default function Exit() {
             </FormControl>
             <FormControl>
               <FormLabel>Pequenas</FormLabel>
-              <NumberInput value={state.s} onChange={(_, v) => dispatch({ action: 's', value: v })}>
+              <NumberInput
+                value={state.s}
+                onChange={(v, _) => dispatch({ action: 's', value: toValue(v) })}
+              >
                 <NumberInputField
                   value={state.s}
                   onChange={(v) => dispatch({ action: 's', value: toValue(v.target.value) })}
@@ -237,12 +269,21 @@ export default function Exit() {
           </Flex>
         </Box>
       </Container>
-      <Container mt={8}>
+      <Container minW={'container.lg'} mt={8}>
         <Table>
           <Thead>
             <Tr>
               <Td>N</Td>
               <Td>Nome</Td>
+              <Td>Cidade</Td>
+              <Td>G</Td>
+              <Td>P</Td>
+              <Td>S</Td>
+              <Td>Total</Td>
+              <Td>Casado</Td>
+              <Td>Forma Pgto.</Td>
+              <Td>Frete</Td>
+              <Td>Pedido</Td>
             </Tr>
           </Thead>
           <Tbody>
@@ -251,6 +292,15 @@ export default function Exit() {
                 <Tr>
                   <Td>{item.sort}</Td>
                   <Td>{item.name}</Td>
+                  <Td>{item.city}</Td>
+                  <Td>{item.b}</Td>
+                  <Td>{item.m}</Td>
+                  <Td>{item.s}</Td>
+                  <Td>{item.s + item.m + item.b}</Td>
+                  <Td>{item.single ? 'Nao' : 'Sim'}</Td>
+                  <Td>{item.payment}</Td>
+                  <Td>{item.freight}</Td>
+                  <Td>{item.order}</Td>
                 </Tr>
               );
             })}
