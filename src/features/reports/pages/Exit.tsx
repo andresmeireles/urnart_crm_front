@@ -19,89 +19,20 @@ import {
   Table,
   Tr,
   Tbody,
+  Tfoot,
 } from '@chakra-ui/react';
+import { exit } from 'process';
 import { useReducer, useState } from 'react';
 import Header from '../../../core/components/Header';
-import { ExitInterface } from '../model/Exit';
+import { ExitItem } from '../model/Exit';
+import { exitTravel } from '../pdfs/exit';
+import { exitBoarding } from '../pdfs/exit-load';
 
 type ExitActions =
   | { action: 'name' | 'city' | 'payment'; value: string }
   | { action: 's' | 'm' | 'b' | 'order' | 'freight' | 'sort'; value: number }
   | { action: 'single'; value: boolean }
   | { action: 'reset' };
-
-class ExitItem {
-  public readonly city: string;
-  public readonly name: string;
-  public readonly payment: string;
-  public readonly b: number;
-  public readonly m: number;
-  public readonly s: number;
-  public readonly freight: number;
-  public readonly sort: number;
-  public readonly single: boolean;
-  public readonly order: number;
-  public readonly hash: string;
-
-  constructor(props: ExitInterface) {
-    const { name, city, payment, order, s, m, b, freight, sort, single } = props;
-    this.name = name;
-    this.payment = payment;
-    this.city = city;
-    this.freight = freight;
-    this.b = b;
-    this.m = m;
-    this.s = s;
-    this.order = order;
-    this.sort = sort;
-    this.single = single;
-    this.hash = new Date().getTime().toString();
-  }
-
-  isValid(): boolean | string {
-    if (this.s < 0 || this.m < 0 || this.b < 0) {
-      return 'nenhuma quantidade pode ser menor que zero';
-    }
-    if (this.s === 0 && this.m === 0 && this.b === 0) {
-      return 'um produto tem de ser maior que zero';
-    }
-    if (
-      this.payment.trim().length === 0 ||
-      this.name.trim().length === 0 ||
-      this.city.trim().length === 0
-    ) {
-      return 'forma de pagamento/nome/cidade nao pode ser vazio';
-    }
-    return true;
-  }
-
-  copyWith(props: {
-    name?: string;
-    city?: string;
-    b?: number;
-    m?: number;
-    s?: number;
-    sort?: number;
-    freight?: number;
-    payment?: string;
-    order?: number;
-    single?: boolean;
-  }) {
-    const { name, city, order, payment, s, m, b, freight, sort, single } = props;
-    return new ExitItem({
-      name: name ?? this.name,
-      city: city ?? this.city,
-      b: b ?? this.b,
-      m: m ?? this.m,
-      s: s ?? this.s,
-      order: order ?? this.order,
-      sort: sort ?? this.sort,
-      freight: freight ?? this.freight,
-      payment: payment ?? this.payment,
-      single: single ?? this.single,
-    });
-  }
-}
 
 const exitDispatcher = (state: ExitItem, event: ExitActions) => {
   const { action } = event;
@@ -166,13 +97,42 @@ export default function Exit() {
     dispatch({ action: 'reset' });
   };
 
+  const report = (type: 'boarding' | 'exiting') => {
+    if (items.length === 0) {
+      toast({
+        title: 'relatorio não pode ser gerado vazio',
+        position: 'top-right',
+        status: 'error',
+      });
+      return;
+    }
+    if (type === 'boarding') {
+      exitBoarding(items);
+      return;
+    }
+    exitTravel(items);
+    return;
+  };
+
   return (
     <>
       <Header name='Relatório de saída' />
       <Container mt={8} minW={'container.lg'}>
-        <Button colorScheme={'green'} width={{ base: '100%' }}>
-          Criar relatório
-        </Button>
+        <Flex gap={3}>
+          <Button
+            colorScheme={'whatsapp'}
+            width={{ base: '100%' }}
+            onClick={() => report('boarding')}
+          >
+            Criar relatorio de embarque
+          </Button>
+          <Button colorScheme={'green'} width={{ base: '100%' }} onClick={() => report('exiting')}>
+            Criar relatório de saída
+          </Button>
+          {/* <Button colorScheme={'green'} width={{ base: '100%' }}> */}
+          {/*   Criar relatório */}
+          {/* </Button> */}
+        </Flex>
         <Box gap={3} mt={8}>
           <Flex gap={3}>
             <Input
@@ -187,21 +147,28 @@ export default function Exit() {
             />
           </Flex>
           <Flex mt={4} gap={3}>
-            <Input
-              placeholder='forma de pagamento'
-              value={state.payment}
-              onChange={(v) => dispatch({ action: 'payment', value: v.target.value })}
-            />
-            <Input
-              placeholder='frete'
-              value={state.freight}
-              onChange={(v) => dispatch({ action: 'freight', value: Number(v.target.value) })}
-            />
-            <Input
-              placeholder='valor do pedido'
-              value={state.order}
-              onChange={(v) => dispatch({ action: 'order', value: Number(v.target.value) })}
-            />
+            <FormControl>
+              <FormLabel>Forma de pagamento</FormLabel>
+              <Input
+                placeholder='forma de pagamento'
+                value={state.payment}
+                onChange={(v) => dispatch({ action: 'payment', value: v.target.value })}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Valor do frete</FormLabel>
+              <Input
+                value={state.freight}
+                onChange={(v) => dispatch({ action: 'freight', value: Number(v.target.value) })}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Valor do pedido</FormLabel>
+              <Input
+                value={state.order}
+                onChange={(v) => dispatch({ action: 'order', value: Number(v.target.value) })}
+              />
+            </FormControl>
           </Flex>
           <Flex gap={3} mt={4}>
             <FormControl>
@@ -269,8 +236,8 @@ export default function Exit() {
           </Flex>
         </Box>
       </Container>
-      <Container minW={'container.lg'} mt={8}>
-        <Table>
+      <Container minW={'container.lg'} mt={8} pb={12}>
+        <Table variant={'striped'}>
           <Thead>
             <Tr>
               <Td>N</Td>
@@ -305,6 +272,25 @@ export default function Exit() {
               );
             })}
           </Tbody>
+          {items.length !== 0 ? (
+            <Tfoot>
+              <Tr>
+                <Td></Td>
+                <Td></Td>
+                <Td></Td>
+                <Td>{items.reduce((p, c) => p + c.b, 0)}</Td>
+                <Td>{items.reduce((p, c) => p + c.m, 0)}</Td>
+                <Td>{items.reduce((p, c) => p + c.s, 0)}</Td>
+                <Td>{items.reduce((p, c) => p + c.totalAmount(), 0)}</Td>
+                <Td></Td>
+                <Td></Td>
+                <Td>{items.reduce((p, c) => p + c.freight, 0)}</Td>
+                <Td>{items.reduce((p, c) => p + c.order, 0)}</Td>
+              </Tr>
+            </Tfoot>
+          ) : (
+            <></>
+          )}
         </Table>
       </Container>
     </>

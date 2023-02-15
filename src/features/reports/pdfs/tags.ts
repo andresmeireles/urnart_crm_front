@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { show } from "./show";
 
 export interface TagInterface {
   name: string,
@@ -38,6 +39,5 @@ export default function tag(props: { tags: TagInterface[] }) {
     }
   }
 
-  const blob = new Blob([doc.output()], { type: 'application/pdf' });
-  window.open(URL.createObjectURL(blob));
+ show(doc.output()); 
 }
