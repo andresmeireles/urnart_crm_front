@@ -12,13 +12,16 @@ import {
   FormControl,
   FormErrorMessage,
   useToast,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import Header from '../../../core/components/Header';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ModelModal from './modals/ModelModal';
+import AddModel from './AddModel';
 
 const schema = yup
   .object({
@@ -49,12 +52,13 @@ export default function AddProduct() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<AddProductType>({ resolver: yupResolver(schema) });
-  // const onSubmit = handleSubmit((data) => console.log(data));
   const onSubmit = handleSubmit((data) => {
     const savTxt = `Produto ${data.model} ${data.type} ${data.height} preço = R$ ${data.price} adicionado com sucesso!`;
     toast({ title: savTxt, position: 'top-right' });
     navigation(-1);
   });
+  const [models, setModels] = useState<string[]>([]);
+  const model = useDisclosure();
 
   // TODO: adicionar modal para adicionar novo tipo
   // TODO: adicionar toast para ação concluída com sucesso
@@ -77,11 +81,24 @@ export default function AddProduct() {
                     setValue('model', Number(v.currentTarget.value))
                   }
                 >
-                  <option value='1'>Option 1</option>
-                  <option value='2'>Option 2</option>
-                  <option value='3'>Option 3</option>
+                  {models.map((model) => (
+                    <option>{model}</option>
+                  ))}
                 </Select>
-                <IconButton aria-label={'add model'} icon={<AddIcon />} />
+                <IconButton
+                  colorScheme={'green'}
+                  aria-label={'add model'}
+                  icon={<AddIcon />}
+                  onClick={model.onOpen}
+                />
+                <ModelModal
+                  isOpen={model.isOpen}
+                  onClose={() => {
+                    model.onClose();
+                  }}
+                  body={<AddModel onClose={model.onClose} />}
+                  title={'Adicionar modelo'}
+                />
               </Flex>
               <FormErrorMessage>{errors.model && errors.model.message}</FormErrorMessage>
             </FormControl>
