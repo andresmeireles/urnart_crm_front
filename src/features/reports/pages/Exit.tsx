@@ -21,10 +21,10 @@ import {
   Tbody,
   Tfoot,
 } from '@chakra-ui/react';
-import { exit } from 'process';
 import { useReducer, useState } from 'react';
 import Header from '../../../core/components/Header';
 import { ExitItem } from '../model/Exit';
+import { driver } from '../pdfs/driver';
 import { exitTravel } from '../pdfs/exit';
 import { exitBoarding } from '../pdfs/exit-load';
 
@@ -97,7 +97,7 @@ export default function Exit() {
     dispatch({ action: 'reset' });
   };
 
-  const report = (type: 'boarding' | 'exiting') => {
+  const report = (type: 'boarding' | 'exiting' | 'driver') => {
     if (items.length === 0) {
       toast({
         title: 'relatorio não pode ser gerado vazio',
@@ -108,6 +108,10 @@ export default function Exit() {
     }
     if (type === 'boarding') {
       exitBoarding(items);
+      return;
+    }
+    if (type === 'driver') {
+      driver({ items: items });
       return;
     }
     exitTravel(items);
@@ -124,27 +128,33 @@ export default function Exit() {
             width={{ base: '100%' }}
             onClick={() => report('boarding')}
           >
-            Criar relatorio de embarque
+            Criar relatório de embarque
           </Button>
           <Button colorScheme={'green'} width={{ base: '100%' }} onClick={() => report('exiting')}>
             Criar relatório de saída
           </Button>
-          {/* <Button colorScheme={'green'} width={{ base: '100%' }}> */}
-          {/*   Criar relatório */}
-          {/* </Button> */}
+          <Button colorScheme={'yellow'} width={{ base: '100%' }} onClick={() => report('driver')}>
+            Relatório do motorista
+          </Button>
         </Flex>
         <Box gap={3} mt={8}>
           <Flex gap={3}>
-            <Input
-              placeholder='cliente'
-              value={state.name}
-              onChange={(v) => dispatch({ action: 'name', value: v.target.value })}
-            />
-            <Input
-              placeholder='cidade'
-              value={state.city}
-              onChange={(v) => dispatch({ action: 'city', value: v.target.value })}
-            />
+            <FormControl>
+              <FormLabel>Nome do cliente</FormLabel>
+              <Input
+                placeholder='cliente'
+                value={state.name}
+                onChange={(v) => dispatch({ action: 'name', value: v.target.value })}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Cidade do cliente</FormLabel>
+              <Input
+                placeholder='cidade'
+                value={state.city}
+                onChange={(v) => dispatch({ action: 'city', value: v.target.value })}
+              />
+            </FormControl>
           </Flex>
           <Flex mt={4} gap={3}>
             <FormControl>
