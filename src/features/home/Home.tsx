@@ -10,6 +10,7 @@ export default function Home() {
         <Menu icon={<ExternalLinkIcon />} color='blue.300' name='Clientes' navigateTo='customer' />
         <Menu icon={<AttachmentIcon />} name='Pedidos' color='yellow.300' navigateTo='order' />
         <Menu icon={<AttachmentIcon />} name='Novo Pedido' color='yellow.300' navigateTo='order/add' />
+        <Menu icon={<AttachmentIcon />} name='Caminhão' color='purple.300' navigateTo='order/add' />
         <Menu icon={<DownloadIcon />} name='Relatório' color="purple.200" navigateTo='report' />
       </SimpleGrid>
     </>

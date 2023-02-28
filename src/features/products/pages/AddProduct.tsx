@@ -1,27 +1,23 @@
-import { AddIcon } from '@chakra-ui/icons';
 import {
   Container,
   Text,
   Grid,
   GridItem,
   Input,
-  Select,
-  Flex,
   Button,
-  IconButton,
   FormControl,
   FormErrorMessage,
   useToast,
-  useDisclosure,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import Header from '../../../core/components/Header';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ChangeEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ModelModal from './modals/ModelModal';
-import AddModel from './AddModel';
+import Model from '../components/inputs/Model';
+import Type from '../components/inputs/Type';
+import Colors from '../components/inputs/Colors';
+import Specs from '../components/inputs/Specs';
 
 const schema = yup
   .object({
@@ -30,18 +26,19 @@ const schema = yup
     height: yup.string().required(),
     price: yup.number().required(),
     color: yup
-      .string()
+      .number()
       .nullable()
       .optional()
       .transform((_, val) => (val !== '' ? Number(val) : null)),
     spec: yup
-      .string()
+      .number()
       .nullable()
       .optional()
       .transform((_, val) => (val !== '' ? Number(val) : null)),
   })
   .required();
-type AddProductType = yup.InferType<typeof schema>;
+
+export type AddProductType = yup.InferType<typeof schema>;
 
 export default function AddProduct() {
   const navigation = useNavigate();
@@ -57,8 +54,6 @@ export default function AddProduct() {
     toast({ title: savTxt, position: 'top-right' });
     navigation(-1);
   });
-  const [models, setModels] = useState<string[]>([]);
-  const model = useDisclosure();
 
   // TODO: adicionar modal para adicionar novo tipo
   // TODO: adicionar toast para ação concluída com sucesso
@@ -69,61 +64,12 @@ export default function AddProduct() {
       <Container maxW={'container.lg'} mt={8}>
         <Grid templateColumns={'repeat(2, 1fr)'} gap={6}>
           <GridItem>
-            <FormControl isInvalid={errors.model !== undefined}>
-              <Text>
-                Modelo<span style={{ color: 'red' }}>*</span>
-              </Text>
-              <Flex gap={2}>
-                <Select
-                  placeholder='modelo'
-                  {...register('model')}
-                  onChange={(v: ChangeEvent<HTMLSelectElement>) =>
-                    setValue('model', Number(v.currentTarget.value))
-                  }
-                >
-                  {models.map((model) => (
-                    <option>{model}</option>
-                  ))}
-                </Select>
-                <IconButton
-                  colorScheme={'green'}
-                  aria-label={'add model'}
-                  icon={<AddIcon />}
-                  onClick={model.onOpen}
-                />
-                <ModelModal
-                  isOpen={model.isOpen}
-                  onClose={() => {
-                    model.onClose();
-                  }}
-                  body={<AddModel onClose={model.onClose} />}
-                  title={'Adicionar modelo'}
-                />
-              </Flex>
-              <FormErrorMessage>{errors.model && errors.model.message}</FormErrorMessage>
-            </FormControl>
+            {/* Model */}
+            <Model register={register} setValue={setValue} errors={errors} />
           </GridItem>
           <GridItem>
-            <FormControl isInvalid={errors.type !== undefined}>
-              <Text>
-                Tipo<span style={{ color: 'red' }}>*</span>
-              </Text>
-              <Flex gap={2}>
-                <Select
-                  placeholder='tipo'
-                  {...register('type')}
-                  onChange={(v: ChangeEvent<HTMLSelectElement>) =>
-                    setValue('model', Number(v.currentTarget.value))
-                  }
-                >
-                  <option value='1'>Option 1</option>
-                  <option value='2'>Option 2</option>
-                  <option value='3'>Option 3</option>
-                </Select>
-                <IconButton aria-label={'add type'} icon={<AddIcon />} />
-              </Flex>
-              <FormErrorMessage>{errors.type && errors.type.message}</FormErrorMessage>
-            </FormControl>
+            {/* Type form */}
+            <Type register={register} setValue={setValue} errors={errors} />
           </GridItem>
           <GridItem>
             <FormControl isInvalid={errors.height !== undefined}>
@@ -153,24 +99,12 @@ export default function AddProduct() {
             </FormControl>
           </GridItem>
           <GridItem>
-            <FormControl isInvalid={errors.color !== undefined}>
-              <Text>Cor</Text>
-              <Flex gap={2}>
-                <Select placeholder='modelo' {...register('color')}></Select>
-                <IconButton aria-label={'add color'} icon={<AddIcon />} />
-              </Flex>
-              <FormErrorMessage>{errors.color && errors.color.message}</FormErrorMessage>
-            </FormControl>
+            {/* Colors */}
+            <Colors errors={errors} setValue={setValue} register={register} />
           </GridItem>
           <GridItem>
-            <FormControl isInvalid={errors.spec !== undefined}>
-              <Text>Especificidade</Text>
-              <Flex gap={2}>
-                <Select placeholder='especificação' {...register('spec')}></Select>
-                <IconButton aria-label={'add spec'} icon={<AddIcon />} />
-              </Flex>
-              <FormErrorMessage>{errors.spec && errors.spec.message}</FormErrorMessage>
-            </FormControl>
+            {/* Specs */}
+            <Specs errors={errors} setValue={setValue} register={register} />
           </GridItem>
         </Grid>
       </Container>

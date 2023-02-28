@@ -25,16 +25,15 @@ export default function (props: {
         <ModalHeader>{title}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>{body}</ModalBody>
-
-        <ModalFooter>
-          {hasClose ? (
+        {hasClose ? (
+          <ModalFooter>
             <Button colorScheme='blue' mr={3} onClick={onClose}>
               Close
             </Button>
-          ) : (
-            <></>
-          )}
-        </ModalFooter>
+          </ModalFooter>
+        ) : (
+          <></>
+        )}
       </ModalContent>
     </Modal>
   );
