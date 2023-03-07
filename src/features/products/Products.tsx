@@ -18,17 +18,11 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../core/components/Header';
-import Get from './api/Get';
 import Product from './model/Product';
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const get = new Get();
-    setProducts(get.all());
-  }, []);
 
   return (
     <>

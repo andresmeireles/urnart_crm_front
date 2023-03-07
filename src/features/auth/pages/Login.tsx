@@ -1,4 +1,4 @@
-import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
+import { ApolloError } from '@apollo/client';
 import {
   FormControl,
   Grid,
@@ -13,24 +13,26 @@ import {
   Flex,
   Checkbox,
   FormErrorMessage,
-  InputGroup,
-  InputRightElement,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import { AppAction } from '../../../core/context/AppActions';
 import { useAppContext } from '../../../core/context/AppContext';
+import { client } from '../../../core/graphql/client';
+import PasswordInput from '../components/PasswordInput';
+import { auth } from '../graphql/query/query';
 
 const schema = yup
   .object({
     username: yup.string().required(),
     password: yup.string().required(),
+    remember: yup.boolean().required().default(false),
   })
   .required();
-type LoginType = yup.InferType<typeof schema>;
+export type LoginType = yup.InferType<typeof schema>;
 
 export default function Login() {
   const {
@@ -39,13 +41,49 @@ export default function Login() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginType>({ resolver: yupResolver(schema) });
-  const [show, setShow] = useState(false);
-  const navigate = useNavigate()
-  const { dispatch } = useAppContext();
-  const onSubmit = handleSubmit(async (data) => {
-    dispatch({ act: AppAction.Login, data: { name: data.username, token: data.username } });
-    navigate('/');
+  const { state, dispatch } = useAppContext();
+  const navigate = useNavigate();
+  const onSubmit = handleSubmit(async (formData) => {
+    const { username, password, remember } = formData;
+    try {
+      const { data } = await client.query({
+        query: auth(),
+        variables: { name: username, password, remember },
+      });
+      if (data === undefined) {
+        setError('username', { type: 'custom', message: 'erro ao  executar login' });
+        setError('password', { type: 'custom', message: 'erro ao executar login' });
+        return;
+      }
+      dispatch({ act: AppAction.login, data: { name: username, token: data.login } });
+      await client.resetStore();
+    } catch (e) {
+      const { message } = e as ApolloError;
+      setError('username', { type: 'custom', message: message });
+      setError('password', { type: 'custom', message: message });
+    }
   });
+  useEffect(() => {
+    if (state.isLogged) {
+      navigate('/');
+      return;
+    }
+  }, [state.token]);
+
+  if (isSubmitting) {
+    return (
+      <Grid minH='calc(100vh)' bg={'gray.100'}>
+        <Flex
+          minH={'100vh'}
+          align={'center'}
+          justify={'center'}
+          bg={useColorModeValue('gray.50', 'gray.800')}
+        >
+          Aguarde...
+        </Flex>
+      </Grid>
+    );
+  }
 
   return (
     <Grid minH='calc(100vh)' bg={'gray.100'}>
@@ -67,25 +105,14 @@ export default function Login() {
                   <Input type='text' autoComplete='off' {...register('username')} />
                   <FormErrorMessage>{errors.username && errors.username.message}</FormErrorMessage>
                 </FormControl>
-                <FormControl id='password' isInvalid={errors.password !== undefined}>
-                  <FormLabel>Senha</FormLabel>
-                  <InputGroup size='md'>
-                    <Input type={show ? 'text' : 'password'} {...register('password')} />
-                    <InputRightElement width='3rem'>
-                      <Button h='1.75rem' size='sm' onClick={() => setShow(!show)}>
-                        {show ? <ViewIcon /> : <ViewOffIcon />}
-                      </Button>
-                    </InputRightElement>
-                  </InputGroup>
-                  <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
-                </FormControl>
+                <PasswordInput errors={errors} register={register} />
                 <Stack spacing={10}>
                   <Stack
                     direction={{ base: 'column', sm: 'row' }}
                     align={'start'}
                     justify={'space-between'}
                   >
-                    <Checkbox>Lembre-se de mim</Checkbox>
+                    <Checkbox {...register('remember')}>Lembre-se de mim</Checkbox>
                     <Link fontSize={'xs'} color={'blue.400'}>
                       Esqueci minha senha
                     </Link>

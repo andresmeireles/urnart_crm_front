@@ -8,11 +8,13 @@ import {
   FormErrorMessage,
   useDisclosure,
 } from '@chakra-ui/react';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { client } from '../../../../core/graphql/client';
+import { colorQuery } from '../../graphql/query';
+import { ProductOptsInterface } from '../../model/Interfaces';
 import { AddProductType } from '../../pages/AddProduct';
 import AddColor from '../adds/AddColor';
-import AddModel from '../adds/AddModel';
 import ModelModal from '../modals/ModelModal';
 
 export default function (props: {
@@ -22,6 +24,39 @@ export default function (props: {
 }) {
   const { register, errors, setValue } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [colors, setColors] = useState<ProductOptsInterface[]>([]);
+
+  const getColors = async () => {
+    console.log('exec');
+    const { error, data } = await client.query({
+      query: colorQuery(),
+      fetchPolicy: 'network-only',
+    });
+    if (error !== undefined) {
+      setColors([]);
+      return;
+    }
+    if (data !== undefined) {
+      console.log(data);
+      const colors = data!.colors.map((color) => ({
+        id: color.id,
+        name: color.name,
+      }));
+      setColors(colors);
+      return;
+    }
+    setColors([]);
+    return;
+  };
+
+  useEffect(() => {
+    getColors().catch(console.error);
+  }, []);
+
+  const closeAction = async () => {
+    await getColors();
+    onClose();
+  };
 
   return (
     <FormControl isInvalid={errors.color !== undefined}>
@@ -33,7 +68,13 @@ export default function (props: {
           onChange={(v: ChangeEvent<HTMLSelectElement>) =>
             setValue('color', Number(v.currentTarget.value))
           }
-        ></Select>
+        >
+          {colors.map((model) => (
+            <option key={model.id} value={model.id}>
+              {model.name}
+            </option>
+          ))}
+        </Select>
         <IconButton
           aria-label={'add color'}
           colorScheme='green'
@@ -43,10 +84,8 @@ export default function (props: {
       </Flex>
       <ModelModal
         isOpen={isOpen}
-        onClose={() => {
-          onClose();
-        }}
-        body={<AddColor onClose={onClose} />}
+        onClose={closeAction}
+        body={<AddColor onClose={closeAction} />}
         title={'Adicionar modelo'}
       />
       <FormErrorMessage>{errors.color && errors.color.message}</FormErrorMessage>

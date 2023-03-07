@@ -26,7 +26,7 @@ export default function Nav(props: { drawer?: ReactNode }) {
   const drawerWidget = drawer ?? <p></p>;
 
   const logout = () => {
-    dispatch({ act: AppAction.Logout });
+    dispatch({ act: AppAction.logout });
     navigate('/login');
   };
 

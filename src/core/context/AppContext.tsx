@@ -1,25 +1,11 @@
-import { ReactNode, createContext, useContext, useReducer, Dispatch, ReactElement } from 'react';
-import { AppActions } from './AppActions';
+import { useQuery } from '@apollo/client';
+import { createContext, useContext, useReducer, Dispatch, ReactElement, useEffect } from 'react';
+import { getUser } from '../../features/auth/graphql/query/user';
+import { AppAction, AppActions } from './AppActions';
 import appReducer from './AppReducer';
+import AppState from './AppState';
 
-export class AppState {
-  constructor(
-    public readonly isLoading: boolean,
-    public readonly name: string,
-    public readonly token: string,
-  ) {}
-
-  copyWith(props: { isLoading?: boolean; name?: string; token?: string }): AppState {
-    const { isLoading, name, token } = props;
-    return new AppState(isLoading ?? this.isLoading, name ?? this.name, token ?? this.token);
-  }
-
-  get isLogged(): boolean {
-    return this.name.trim().length !== 0 && this.token.trim().length !== 0;
-  }
-}
-
-const initState = new AppState(false, '', '');
+const initState = new AppState('', '');
 
 const AppContext = createContext<{
   state: AppState;
@@ -31,6 +17,28 @@ const AppContext = createContext<{
 
 export default function AppProvider(props: { children: JSX.Element }): ReactElement {
   const [state, dispatch] = useReducer(appReducer, initState);
+  const { loading, error, data } = useQuery(getUser());
+
+  useEffect(() => {
+    if (!loading) {
+      if (error !== undefined) {
+        dispatch({ act: AppAction.logout });
+      }
+      if (data !== undefined) {
+        dispatch({
+          act: AppAction.login,
+          data: {
+            token: localStorage.getItem('token')!,
+            name: data.getUser.name,
+          },
+        });
+      }
+    }
+  }, [loading]);
+
+  if (loading) {
+    return <p>aguarde...</p>;
+  }
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>

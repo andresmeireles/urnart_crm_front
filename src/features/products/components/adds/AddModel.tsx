@@ -1,11 +1,14 @@
+import { useMutation } from '@apollo/client';
 import { Button, Flex, FormControl, FormErrorMessage, FormLabel, Input } from '@chakra-ui/react';
 import { useState } from 'react';
+import { addModel } from '../../graphql/mutations';
 
 export default function (props: { onClose: () => void }) {
   const { onClose } = props;
   const [model, setModel] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [add] = useMutation(addModel());
 
   const submit = async () => {
     setIsSubmitting(true);
@@ -14,8 +17,15 @@ export default function (props: { onClose: () => void }) {
       setIsSubmitting(false);
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
+    const { errors } = await add({
+      variables: {
+        name: model,
+      },
+    });
+    if (errors !== undefined) {
+      console.log(errors);
+      setIsSubmitting(false);
+    }
     onClose();
   };
 
