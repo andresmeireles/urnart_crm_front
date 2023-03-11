@@ -1,5 +1,3 @@
-import { Console } from 'console';
-
 export default class AppState {
   constructor(public readonly name: string, public readonly token: string) {}
 

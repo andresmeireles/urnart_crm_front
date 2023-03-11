@@ -27,7 +27,6 @@ export default function (props: {
   const [types, setTypes] = useState<ProductOptsInterface[]>([]);
 
   const getTypes = async () => {
-    console.log('exec');
     const { error, data } = await client.query({
       query: typesQuery(),
       fetchPolicy: 'network-only',
@@ -37,7 +36,6 @@ export default function (props: {
       return;
     }
     if (data !== undefined) {
-      console.log(data);
       const types = data!.types.map((types) => ({
         id: types.id,
         name: types.name,
@@ -60,9 +58,7 @@ export default function (props: {
 
   return (
     <FormControl isInvalid={errors.type !== undefined}>
-      <Text>
-        Tipo<span style={{ color: 'red' }}>*</span>
-      </Text>
+      <Text>Tipo</Text>
       <Flex gap={2}>
         <Select
           placeholder='tipo'

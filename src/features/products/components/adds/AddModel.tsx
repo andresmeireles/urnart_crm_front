@@ -1,4 +1,4 @@
-import { useMutation } from '@apollo/client';
+import { ApolloError, useMutation } from '@apollo/client';
 import { Button, Flex, FormControl, FormErrorMessage, FormLabel, Input } from '@chakra-ui/react';
 import { useState } from 'react';
 import { addModel } from '../../graphql/mutations';
@@ -17,16 +17,22 @@ export default function (props: { onClose: () => void }) {
       setIsSubmitting(false);
       return;
     }
-    const { errors } = await add({
-      variables: {
-        name: model,
-      },
-    });
-    if (errors !== undefined) {
-      console.log(errors);
+    try {
+      await add({
+        variables: {
+          name: model,
+        },
+      });
+      onClose();
+    } catch (e) {
+      if (e instanceof ApolloError) {
+        setError(e.message);
+        setIsSubmitting(false);
+        return;
+      }
+      setError('erro ao inserir');
       setIsSubmitting(false);
     }
-    onClose();
   };
 
   return (

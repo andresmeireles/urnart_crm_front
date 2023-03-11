@@ -1,3 +1,4 @@
+import { useQuery } from '@apollo/client';
 import { SearchIcon } from '@chakra-ui/icons';
 import {
   Button,
@@ -18,11 +19,42 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../core/components/Header';
+import { client } from '../../core/graphql/client';
+import { productsQuery } from './graphql/query';
 import Product from './model/Product';
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const navigate = useNavigate();
+
+  const queryProducts = async () => {
+    const { loading, data } = await client.query({
+      query: productsQuery(),
+      fetchPolicy: 'network-only',
+    });
+    if (!loading) {
+      setProducts(
+        data?.products.map(
+          (p) =>
+            new Product({
+              height: p.height,
+              id: Number(p.id),
+              model: p.model.name,
+              price: p.price,
+              type: p.type?.name ?? '',
+              color: p.color?.name ?? '',
+              spec: p.spec?.name ?? '',
+            }),
+        ) ?? [],
+      );
+      return;
+    }
+  };
+
+  useEffect(() => {
+    console.log('execute');
+    queryProducts();
+  }, []);
 
   return (
     <>
@@ -64,7 +96,7 @@ export default function Products() {
             </Thead>
             <Tbody>
               {products.map((p) => (
-                <Tr>
+                <Tr key={p.id}>
                   <Td>
                     <Center>{p.id}</Center>
                   </Td>

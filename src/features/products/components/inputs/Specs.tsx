@@ -27,7 +27,6 @@ export default function (props: {
   const [specs, setSpecs] = useState<ProductOptsInterface[]>([]);
 
   const getSpecs = async () => {
-    console.log('exec');
     const { error, data } = await client.query({
       query: specQuery(),
       fetchPolicy: 'network-only',
@@ -37,7 +36,6 @@ export default function (props: {
       return;
     }
     if (data !== undefined) {
-      console.log(data);
       const specs = data!.specs.map((spec) => ({
         id: spec.id,
         name: spec.name,

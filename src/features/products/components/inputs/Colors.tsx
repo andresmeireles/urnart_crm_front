@@ -27,7 +27,6 @@ export default function (props: {
   const [colors, setColors] = useState<ProductOptsInterface[]>([]);
 
   const getColors = async () => {
-    console.log('exec');
     const { error, data } = await client.query({
       query: colorQuery(),
       fetchPolicy: 'network-only',
@@ -37,7 +36,6 @@ export default function (props: {
       return;
     }
     if (data !== undefined) {
-      console.log(data);
       const colors = data!.colors.map((color) => ({
         id: color.id,
         name: color.name,

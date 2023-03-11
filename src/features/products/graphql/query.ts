@@ -43,3 +43,27 @@ export function specQuery() {
     }
   `);
 }
+
+export function productsQuery() {
+  return graphql(`
+    query GetProducts {
+      products {
+        id
+        model {
+          name
+        }
+        color {
+          name
+        }
+        spec {
+          name
+        }
+        type {
+          name
+        }
+        height
+        price
+      }
+    }
+  `);
+}

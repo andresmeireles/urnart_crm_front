@@ -32,7 +32,6 @@ export default function (props: {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const getModels = async () => {
-    console.log('exec');
     const { error, data } = await client.query({
       query: modelQuery(),
       fetchPolicy: 'network-only',
@@ -42,7 +41,6 @@ export default function (props: {
       return;
     }
     if (data !== undefined) {
-      console.log(data);
       const models = data!.models.map((model) => ({
         id: model.id,
         name: model.name,
